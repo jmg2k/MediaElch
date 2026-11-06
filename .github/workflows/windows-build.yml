@@ -1,0 +1,63 @@
+name: Windows Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      qt_version:
+        description: "Qt version"
+        required: false
+        default: "6.8.*"
+      build_type:
+        description: "CMake build type"
+        required: false
+        default: "Release"
+        type: choice
+        options:
+          - Release
+          - RelWithDebInfo
+          - Debug
+
+jobs:
+  windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ inputs.qt_version }}
+          arch: win64_msvc2022_64
+          modules: qtmultimedia
+          cache: true
+
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Configure
+        shell: pwsh
+        run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=${{ inputs.build_type }}
+          -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
+          -DMEDIAELCH_FORCE_QT6=ON
+          -DENABLE_TESTS=OFF
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Deploy Qt runtime
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist/MediaElch | Out-Null
+          Copy-Item build/MediaElch.exe dist/MediaElch/
+          windeployqt --release --no-translations dist/MediaElch/MediaElch.exe
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MediaElch-windows-x64
+          path: dist/MediaElch
