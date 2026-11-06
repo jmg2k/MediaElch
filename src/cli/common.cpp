@@ -2,6 +2,9 @@
 
 #include <QTextStream>
 
+#include <ostream>
+#include <string>
+
 // levels:
 //   0  only errors
 //   1  also critical messages
