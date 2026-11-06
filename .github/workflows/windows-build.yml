@@ -139,7 +139,17 @@ jobs:
           Copy-Item deps/mediainfo/MediaInfo.dll dist/MediaElch/
           # Project-built shared libs (QuaZip) are not picked up by windeployqt.
           Get-ChildItem build -Recurse -Filter *.dll | ForEach-Object { Copy-Item $_.FullName dist/MediaElch/ }
-          windeployqt --release --no-translations dist/MediaElch/MediaElch.exe
+          # Scan every binary we ship, not just the exe: QuaZip needs Qt6Core5Compat,
+          # which the exe itself does not import.
+          windeployqt --release --no-translations dist/MediaElch/MediaElch.exe (Get-ChildItem dist/MediaElch/*.dll | Where-Object { $_.Name -notmatch '^(Qt6|avcodec|avformat|avutil|swresample|swscale|d3dcompiler|dxcompiler|dxil|opengl32sw|MediaInfo)' } | ForEach-Object FullName)
+          # Optional SQL drivers we don't use; they need libpq / Mimer which we don't ship.
+          Remove-Item dist/MediaElch/sqldrivers/qsqlpsql.dll, dist/MediaElch/sqldrivers/qsqlmimer.dll -ErrorAction SilentlyContinue
+
+      - name: Verify all DLL imports resolve
+        shell: pwsh
+        run: |
+          python -m pip install --quiet pefile
+          python -I .github/scripts/check_imports.py dist/MediaElch
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
