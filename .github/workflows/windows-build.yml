@@ -40,8 +40,9 @@ jobs:
         with:
           arch: x64
 
-      - name: Cache vcpkg downloads and binaries
-        uses: actions/cache@v4
+      - name: Restore vcpkg cache
+        id: vcpkg-cache
+        uses: actions/cache/restore@v4
         with:
           path: |
             C:/vcpkg/downloads
@@ -57,6 +58,16 @@ jobs:
       - name: Install zlib (needed by QuaZip)
         shell: pwsh
         run: vcpkg install zlib:x64-windows-static-md --vcpkg-root=C:/vcpkg
+
+      # Save right after install so the cache survives a failing build.
+      - name: Save vcpkg cache
+        if: steps.vcpkg-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            C:/vcpkg/downloads
+            ~/AppData/Local/vcpkg/archives
+          key: vcpkg-${{ runner.os }}-zlib-v1
 
       - name: Configure
         shell: pwsh

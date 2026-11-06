@@ -4,6 +4,9 @@
 #include <QString>
 #include <QStringList>
 
+#include <ostream>
+#include <string>
+
 namespace mediaelch {
 
 /// Represents a MediaElch version. Useful for comparing versions.
