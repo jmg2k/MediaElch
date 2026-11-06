@@ -37,6 +37,10 @@ jobs:
         with:
           arch: x64
 
+      - name: Install zlib (needed by QuaZip)
+        shell: pwsh
+        run: vcpkg install zlib:x64-windows-static-md --vcpkg-root=C:cpkg
+
       - name: Configure
         shell: pwsh
         run: >
@@ -45,6 +49,8 @@ jobs:
           -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
           -DMEDIAELCH_FORCE_QT6=ON
           -DENABLE_TESTS=OFF
+          -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
+          -DVCPKG_TARGET_TRIPLET=x64-windows-static-md
 
       - name: Build
         run: cmake --build build --parallel
