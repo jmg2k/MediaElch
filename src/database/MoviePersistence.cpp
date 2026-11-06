@@ -57,7 +57,7 @@ void MoviePersistence::addMovie(Movie* movie, DirectoryPath path)
                   "hasClearArt, hasCdArt, hasBanner, hasThumb, hasExtraFanarts, discType, path) "
                   "VALUES(:content, :lastModified, :inSeparateFolder, :hasPoster, :hasBackdrop, :hasLogo, "
                   ":hasClearArt, :hasCdArt, :hasBanner, :hasThumb, :hasExtraFanarts, :discType, :path)");
-    query.bindValue(":content", movie->nfoContent().isEmpty() ? "" : movie->nfoContent().toUtf8());
+    query.bindValue(":content", movie->nfoContent().isEmpty() ? QByteArray("") : movie->nfoContent().toUtf8());
     query.bindValue(
         ":lastModified", movie->fileLastModified().isNull() ? QDateTime::currentDateTime() : movie->fileLastModified());
     query.bindValue(":inSeparateFolder", (movie->inSeparateFolder() ? 1 : 0));
@@ -86,7 +86,7 @@ void MoviePersistence::addMovie(Movie* movie, DirectoryPath path)
                       ":language, :forced)");
         query.bindValue(":idMovie", insertId);
         query.bindValue(":files", subtitle->files().join("%§%"));
-        query.bindValue(":language", subtitle->language().isEmpty() ? "" : subtitle->language());
+        query.bindValue(":language", subtitle->language().isEmpty() ? QByteArray("") : subtitle->language());
         query.bindValue(":forced", subtitle->forced() ? 1 : 0);
         query.exec();
     }
@@ -100,7 +100,7 @@ void MoviePersistence::update(Movie* movie)
 {
     QSqlQuery query(db());
     query.prepare("UPDATE movies SET content=:content WHERE idMovie=:idMovie");
-    query.bindValue(":content", movie->nfoContent().isEmpty() ? "" : movie->nfoContent());
+    query.bindValue(":content", movie->nfoContent().isEmpty() ? QByteArray("") : movie->nfoContent());
     query.bindValue(":idMovie", movie->databaseId().toInt());
     query.exec();
 
@@ -122,7 +122,7 @@ void MoviePersistence::update(Movie* movie)
                       ":language, :forced)");
         query.bindValue(":idMovie", movie->databaseId().toInt());
         query.bindValue(":files", subtitle->files().join("%§%"));
-        query.bindValue(":language", subtitle->language().isEmpty() ? "" : subtitle->language());
+        query.bindValue(":language", subtitle->language().isEmpty() ? QByteArray("") : subtitle->language());
         query.bindValue(":forced", subtitle->forced() ? 1 : 0);
         query.exec();
     }

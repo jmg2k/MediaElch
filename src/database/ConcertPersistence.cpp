@@ -48,7 +48,7 @@ void ConcertPersistence::add(Concert* concert, DirectoryPath path)
     QSqlQuery query(db());
     query.prepare("INSERT INTO concerts(content, inSeparateFolder, path) "
                   "VALUES(:content, :inSeparateFolder, :path)");
-    query.bindValue(":content", concert->nfoContent().isEmpty() ? "" : concert->nfoContent().toUtf8());
+    query.bindValue(":content", concert->nfoContent().isEmpty() ? QByteArray("") : concert->nfoContent().toUtf8());
     query.bindValue(":inSeparateFolder", (concert->inSeparateFolder() ? 1 : 0));
     query.bindValue(":path", path.toString().toUtf8());
     query.exec();
@@ -67,7 +67,7 @@ void ConcertPersistence::update(Concert* concert)
 {
     QSqlQuery query(db());
     query.prepare("UPDATE concerts SET content=:content WHERE idConcert=:id");
-    query.bindValue(":content", concert->nfoContent().isEmpty() ? "" : concert->nfoContent());
+    query.bindValue(":content", concert->nfoContent().isEmpty() ? QByteArray("") : concert->nfoContent());
     query.bindValue(":id", concert->databaseId().toInt());
     query.exec();
 

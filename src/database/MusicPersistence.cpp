@@ -44,7 +44,7 @@ void MusicPersistence::add(Artist* artist, DirectoryPath path)
     QSqlQuery query(db());
     query.prepare("INSERT INTO artists(content, dir, path) "
                   "VALUES(:content, :dir, :path)");
-    query.bindValue(":content", artist->nfoContent().isEmpty() ? "" : artist->nfoContent().toUtf8());
+    query.bindValue(":content", artist->nfoContent().isEmpty() ? QByteArray("") : artist->nfoContent().toUtf8());
     query.bindValue(":dir", artist->path().toString().toUtf8());
     query.bindValue(":path", path.toString().toUtf8());
     query.exec();
@@ -55,7 +55,7 @@ void MusicPersistence::update(Artist* artist)
 {
     QSqlQuery query(db());
     query.prepare("UPDATE artists SET content=:content WHERE idArtist=:id");
-    query.bindValue(":content", artist->nfoContent().isEmpty() ? "" : artist->nfoContent());
+    query.bindValue(":content", artist->nfoContent().isEmpty() ? QByteArray("") : artist->nfoContent());
     query.bindValue(":id", artist->databaseId().toInt());
     query.exec();
 }
@@ -100,7 +100,7 @@ void MusicPersistence::add(Album* album, DirectoryPath path)
     query.prepare("INSERT INTO albums(idArtist, content, dir, path) "
                   "VALUES(:idArtist, :content, :dir, :path)");
     query.bindValue(":idArtist", album->artistObj()->databaseId().toInt());
-    query.bindValue(":content", album->nfoContent().isEmpty() ? "" : album->nfoContent().toUtf8());
+    query.bindValue(":content", album->nfoContent().isEmpty() ? QByteArray("") : album->nfoContent().toUtf8());
     query.bindValue(":dir", album->path().toString().toUtf8());
     query.bindValue(":path", path.toString().toUtf8());
     query.exec();
@@ -111,7 +111,7 @@ void MusicPersistence::update(Album* album)
 {
     QSqlQuery query(db());
     query.prepare("UPDATE albums SET content=:content WHERE idAlbum=:id");
-    query.bindValue(":content", album->nfoContent().isEmpty() ? "" : album->nfoContent());
+    query.bindValue(":content", album->nfoContent().isEmpty() ? QByteArray("") : album->nfoContent());
     query.bindValue(":id", album->databaseId().toInt());
     query.exec();
 }
