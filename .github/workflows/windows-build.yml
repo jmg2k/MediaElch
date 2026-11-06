@@ -30,7 +30,7 @@ jobs:
         with:
           version: ${{ inputs.qt_version }}
           arch: win64_msvc2022_64
-          modules: qtmultimedia
+          modules: qtmultimedia qt5compat
           cache: true
 
       - uses: ilammy/msvc-dev-cmd@v1
