@@ -32,7 +32,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ runner.workspace }}/Qt
-          key: qt-${{ runner.os }}-${{ inputs.qt_version }}-msvc2022_64-qtmultimedia-qt5compat-v1
+          key: qt-${{ runner.os }}-${{ inputs.qt_version }}-msvc2022_64-qtmultimedia-qt5compat-qtimageformats-v1
 
       - name: Install Qt
         if: steps.qt-cache.outputs.cache-hit != 'true'
@@ -40,7 +40,7 @@ jobs:
         with:
           version: ${{ inputs.qt_version }}
           arch: win64_msvc2022_64
-          modules: qtmultimedia qt5compat
+          modules: qtmultimedia qt5compat qtimageformats
           cache: false
           # Use the runner's Python 3.12 (prebuilt wheels) instead of 3.15,
           # which compiles py7zr's dependencies from source on every run.
@@ -51,7 +51,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{ runner.workspace }}/Qt
-          key: qt-${{ runner.os }}-${{ inputs.qt_version }}-msvc2022_64-qtmultimedia-qt5compat-v1
+          key: qt-${{ runner.os }}-${{ inputs.qt_version }}-msvc2022_64-qtmultimedia-qt5compat-qtimageformats-v1
 
       - name: Set up Qt environment from cache
         if: steps.qt-cache.outputs.cache-hit == 'true'
@@ -142,6 +142,11 @@ jobs:
           # Scan every binary we ship, not just the exe: QuaZip needs Qt6Core5Compat,
           # which the exe itself does not import.
           windeployqt --release --no-translations dist/MediaElch/MediaElch.exe (Get-ChildItem dist/MediaElch/*.dll | Where-Object { $_.Name -notmatch '^(Qt6|avcodec|avformat|avutil|swresample|swscale|d3dcompiler|dxcompiler|dxil|opengl32sw|MediaInfo)' } | ForEach-Object FullName)
+          # ImageCapture (video thumbnails) runs <appdir>/vendor/ffmpeg.exe.
+          New-Item -ItemType Directory -Force dist/MediaElch/vendor | Out-Null
+          Invoke-WebRequest "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip" -OutFile deps/ffmpeg.zip
+          Expand-Archive deps/ffmpeg.zip -DestinationPath deps/ffmpeg
+          Copy-Item (Get-ChildItem deps/ffmpeg -Recurse -Filter ffmpeg.exe | Select-Object -First 1).FullName dist/MediaElch/vendor/ffmpeg.exe
           # Optional SQL drivers we don't use; they need libpq / Mimer which we don't ship.
           Remove-Item dist/MediaElch/sqldrivers/qsqlpsql.dll, dist/MediaElch/sqldrivers/qsqlmimer.dll -ErrorAction SilentlyContinue
 
