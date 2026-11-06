@@ -39,7 +39,7 @@ jobs:
 
       - name: Install zlib (needed by QuaZip)
         shell: pwsh
-        run: vcpkg install zlib:x64-windows-static-md --vcpkg-root=C:cpkg
+        run: vcpkg install zlib:x64-windows-static-md --vcpkg-root=C:/vcpkg
 
       - name: Configure
         shell: pwsh
