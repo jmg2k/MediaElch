@@ -58,11 +58,11 @@ jobs:
         shell: pwsh
         run: |
           $root = "$env:RUNNER_WORKSPACE\Qt\${{ inputs.qt_version }}\msvc2022_64"
-          if (-not (Test-Path "$rootin\qmake.exe")) { throw "Cached Qt not found at $root" }
+          if (-not (Test-Path "$root\bin\qmake.exe")) { throw "Cached Qt not found at $root" }
           "QT_ROOT_DIR=$root" >> $env:GITHUB_ENV
           "QT_PLUGIN_PATH=$root\plugins" >> $env:GITHUB_ENV
           "QML2_IMPORT_PATH=$root\qml" >> $env:GITHUB_ENV
-          "$rootin" >> $env:GITHUB_PATH
+          "$root\bin" >> $env:GITHUB_PATH
 
       - uses: ilammy/msvc-dev-cmd@v1
         with:
