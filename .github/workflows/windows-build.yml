@@ -69,6 +69,24 @@ jobs:
             ~/AppData/Local/vcpkg/archives
           key: vcpkg-${{ runner.os }}-zlib-v1
 
+      # MediaElch loads MediaInfo.dll at runtime but needs the MediaInfoDLL and
+      # ZenLib headers at compile time (system includes on Linux).
+      - name: Fetch MediaInfo
+        shell: pwsh
+        run: |
+          $mi = "26.10"; $zen = "0.4.41"
+          $base = "https://mediaarea.net/download"
+          New-Item -ItemType Directory -Force deps | Out-Null
+          Invoke-WebRequest "$base/binary/libmediainfo0/$mi/MediaInfo_DLL_${mi}_Windows_x64_WithoutInstaller.zip" -OutFile deps/mi.zip
+          Invoke-WebRequest "$base/source/libzen/$zen/libzen_$zen.tar.gz" -OutFile deps/zen.tar.gz
+          Expand-Archive deps/mi.zip -DestinationPath deps/mediainfo
+          tar -xzf deps/zen.tar.gz -C deps
+          if (-not (Test-Path deps/mediainfo/MediaInfo.dll)) { throw "MediaInfo.dll missing" }
+          if (-not (Test-Path deps/ZenLib/Source/ZenLib/Ztring.h)) { throw "ZenLib headers missing" }
+          # cl.exe reads %INCLUDE%; append the header dirs for later steps.
+          $ws = $env:GITHUB_WORKSPACE
+          "INCLUDE=$env:INCLUDE;$ws\deps\mediainfo\Developers\Source;$ws\deps\ZenLib\Source" >> $env:GITHUB_ENV
+
       - name: Configure
         shell: pwsh
         run: >
@@ -90,6 +108,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force dist/MediaElch | Out-Null
           Copy-Item build/MediaElch.exe dist/MediaElch/
+          Copy-Item deps/mediainfo/MediaInfo.dll dist/MediaElch/
           windeployqt --release --no-translations dist/MediaElch/MediaElch.exe
 
       - name: Upload artifact
