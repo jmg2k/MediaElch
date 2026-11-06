@@ -32,10 +32,27 @@ jobs:
           arch: win64_msvc2022_64
           modules: qtmultimedia qt5compat
           cache: true
+          # Use the runner's Python 3.12 (prebuilt wheels) instead of 3.15,
+          # which compiles py7zr's dependencies from source on every run.
+          setup-python: false
 
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
+
+      - name: Cache vcpkg downloads and binaries
+        uses: actions/cache@v4
+        with:
+          path: |
+            C:/vcpkg/downloads
+            ~/AppData/Local/vcpkg/archives
+          key: vcpkg-${{ runner.os }}-zlib-v1
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: windows-${{ inputs.qt_version }}-${{ inputs.build_type }}
+          max-size: 500M
 
       - name: Install zlib (needed by QuaZip)
         shell: pwsh
@@ -49,6 +66,8 @@ jobs:
           -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
           -DMEDIAELCH_FORCE_QT6=ON
           -DENABLE_TESTS=OFF
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
           -DVCPKG_TARGET_TRIPLET=x64-windows-static-md
 
